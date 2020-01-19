@@ -31,7 +31,7 @@ public class CallCenterController {
 		Map<String, Object> response = new HashMap<>();
 		
 		if(archivo.isEmpty()) {
-			response.put("error", "Se debe enviar un archivo.");
+			response.put("error", "El archivo enviado está vacío.");
 			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
 		
@@ -39,8 +39,7 @@ public class CallCenterController {
 			return ResponseEntity.ok( calificarLlamadasService.calificar(archivo) );
 			
 		} catch (IOException exception) {
-			response.put("mensaje", "Se ha presentado un error al intentar procesar el archivo.");
-			response.put("error", exception.getMessage() + ": " + exception.getCause().getMessage());
+			response.put("error", exception.getMessage().concat(": ").concat(exception.getCause().getMessage()));
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}	
 	}
