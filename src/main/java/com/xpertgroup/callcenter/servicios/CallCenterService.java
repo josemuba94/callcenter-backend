@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,13 +38,21 @@ public class CallCenterService implements CalificarLlamadasService {
 	private Logger log = LoggerFactory.getLogger(CallCenterService.class);
 
 	@Override
-	public List<Calificacion> calificar(MultipartFile archivoRecibido) throws IOException {		
+	public Page<Calificacion> calificar(MultipartFile archivoRecibido, int pagina, int tamanoPagina) throws IOException {		
 		String contenido =  new String(archivoRecibido.getBytes());
 		
-		return Arrays.stream(contenido.split("CONVERSACION "))
+		List<Calificacion> calificaciones = Arrays.stream(contenido.split("CONVERSACION "))
 				.filter(Strings::isNotBlank)
 				.map(conversacion -> obtenerCalificacion(conversacion.trim()))
 				.collect(Collectors.toList());
+		
+		int totalElementos = calificaciones.size();
+		int indicieInicial = pagina*tamanoPagina;
+		int indiceFinal = (indicieInicial+tamanoPagina < totalElementos) ? indicieInicial+tamanoPagina : totalElementos; 
+		
+		return new PageImpl<>(calificaciones.subList(indicieInicial, indiceFinal)
+				, PageRequest.of(pagina, tamanoPagina)
+				, totalElementos);
 	}
 	
 	public Calificacion obtenerCalificacion(String conversacion) {

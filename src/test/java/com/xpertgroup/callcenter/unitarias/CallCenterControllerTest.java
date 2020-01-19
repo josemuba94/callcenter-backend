@@ -3,6 +3,7 @@ package com.xpertgroup.callcenter.unitarias;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -43,7 +44,7 @@ public class CallCenterControllerTest {
 		MockMultipartFile archivo = new MockMultipartFile("archivo", conversacion, "text/plain", conversacion.getBytes());
 		
 		// Act
-		mockMvc.perform(MockMvcRequestBuilders.multipart(LOCALHOST_API + CallCenterController.URL_CALIFICAR_LLAMADAS)
+		mockMvc.perform(MockMvcRequestBuilders.multipart(LOCALHOST_API + CallCenterController.URL_CALIFICAR_LLAMADAS, 0)
 				.file(archivo))
 				// Assert
 				.andExpect(status().isBadRequest());
@@ -56,10 +57,12 @@ public class CallCenterControllerTest {
 		MockMultipartFile archivo = new MockMultipartFile("archivo", conversacion, "text/plain", conversacion.getBytes());
 
 		// Act
-		String response = mockMvc.perform(MockMvcRequestBuilders.multipart(LOCALHOST_API + CallCenterController.URL_CALIFICAR_LLAMADAS)
+		String response = mockMvc.perform(MockMvcRequestBuilders.multipart(LOCALHOST_API + CallCenterController.URL_CALIFICAR_LLAMADAS, 0)
 				.file(archivo)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 		
-		Calificacion calificacion = objectMapper.readValue(response.substring(1, response.length()-1), Calificacion.class);
+		JSONObject jsonObject = new JSONObject(response);
+		
+		Calificacion calificacion = objectMapper.readValue(jsonObject.getJSONArray("content").get(0).toString(), Calificacion.class);
 		
 		// Assert
 		assertTrue(calificacion.getPuntaje() == -100 && calificacion.getEstrellas() == 0);
